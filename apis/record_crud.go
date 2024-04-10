@@ -62,7 +62,6 @@ func (api *recordApi) list(c echo.Context) error {
 		requestInfo.Admin != nil,
 	)
 
-	fmt.Println(api.app.Settings().Pagination.MaxPerPage)
 	searchProvider := search.NewProvider(fieldsResolver).
 		PerPage(api.app.Settings().Pagination.DefaultPerPage).
 		MaxPerPage(api.app.Settings().Pagination.MaxPerPage).
