@@ -101,7 +101,7 @@
 
                     <div class="col-lg-6">
                         <Field class="form-field required" name="meta.appUrl" let:uniqueId>
-                            <label for={uniqueId}>Application url</label>
+                            <label for={uniqueId}>Application URL</label>
                             <input type="text" id={uniqueId} required bind:value={formSettings.meta.appUrl} />
                         </Field>
                     </div>
@@ -137,6 +137,7 @@
 
                     <div class="col-lg-12 flex">
                         <div class="flex-fill" />
+
                         {#if hasChanges}
                             <button
                                 type="button"
