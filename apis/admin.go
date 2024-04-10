@@ -193,8 +193,7 @@ func (api *adminApi) list(c echo.Context) error {
 	admins := []*models.Admin{}
 
 	result, err := search.NewProvider(fieldResolver).
-		DefaultPerPage(api.app.Settings().Pagination.DefaultPerPage).
-		MaxPerPage(api.app.Settings().Pagination.MaxPerPage).
+		PerPage(api.app.Settings().Pagination.DefaultPerPage).
 		Query(api.app.Dao().AdminQuery()).
 		ParseAndExec(c.QueryParams().Encode(), &admins)
 
