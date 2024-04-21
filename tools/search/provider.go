@@ -27,10 +27,10 @@ const (
 
 // Result defines the returned search result structure.
 type Result struct {
-	Page       int `json:"page"`
-	PerPage    int `json:"perPage"`
+	Page       int `json:"page,omitempty"`
+	PerPage    int `json:"perPage,omitempty"`
 	TotalItems int `json:"totalItems"`
-	TotalPages int `json:"totalPages"`
+	TotalPages int `json:"totalPages,omitempty"`
 	Items      any `json:"items"`
 }
 
@@ -44,6 +44,7 @@ type Provider struct {
 	perPage        int
 	maxPerPage     int
 	defaultPerPage int
+	isAll          bool
 	sort           []SortField
 	filter         []FilterData
 }
@@ -73,6 +74,11 @@ func NewProvider(fieldResolver FieldResolver) *Provider {
 // Query sets the base query that will be used to fetch the search items.
 func (s *Provider) Query(query *dbx.SelectQuery) *Provider {
 	s.query = query
+	return s
+}
+
+func (s *Provider) SetAll(isAll bool) *Provider {
+	s.isAll = isAll
 	return s
 }
 
@@ -271,8 +277,10 @@ func (s *Provider) Exec(items any) (*Result, error) {
 
 	// apply pagination to the original query and fetch the models
 	modelsExec := func() error {
-		modelsQuery.Limit(int64(s.perPage))
-		modelsQuery.Offset(int64(s.perPage * (s.page - 1)))
+		if !s.isAll {
+			modelsQuery.Limit(int64(s.perPage))
+			modelsQuery.Offset(int64(s.perPage * (s.page - 1)))
+		}
 
 		return modelsQuery.All(items)
 	}
@@ -292,12 +300,21 @@ func (s *Provider) Exec(items any) (*Result, error) {
 		}
 	}
 
-	result := &Result{
-		Page:       s.page,
-		PerPage:    s.perPage,
-		TotalItems: totalCount,
-		TotalPages: totalPages,
-		Items:      items,
+	var result *Result
+
+	if s.isAll {
+		result = &Result{
+			TotalItems: totalCount,
+			Items:      items,
+		}
+	} else {
+		result = &Result{
+			Page:       s.page,
+			PerPage:    s.perPage,
+			TotalItems: totalCount,
+			TotalPages: totalPages,
+			Items:      items,
+		}
 	}
 
 	return result, nil

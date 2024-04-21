@@ -366,6 +366,7 @@ func (api *realtimeApi) resolveRecordCollection(model models.Model) (collection 
 type recordData struct {
 	Record any    `json:"record"` /* map or models.Record */
 	Action string `json:"action"`
+	User   string `json:"user"`
 }
 
 func (api *realtimeApi) broadcastRecord(action string, record *models.Record, dryCache bool) error {
@@ -450,6 +451,7 @@ func (api *realtimeApi) broadcastRecord(action string, record *models.Record, dr
 				data := &recordData{
 					Action: action,
 					Record: cleanRecord,
+					User:   extractAuthIdFromGetter(client),
 				}
 
 				// check fields

@@ -44,6 +44,8 @@ func (api *recordApi) list(c echo.Context) error {
 
 	requestInfo := RequestInfo(c)
 
+	isAll := c.QueryParam("all") == "true"
+
 	// forbid users and guests to query special filter/sort fields
 	if err := checkForAdminOnlyRuleFields(requestInfo); err != nil {
 		return err
@@ -63,9 +65,15 @@ func (api *recordApi) list(c echo.Context) error {
 	)
 
 	searchProvider := search.NewProvider(fieldsResolver).
-		PerPage(api.app.Settings().Pagination.DefaultPerPage).
-		MaxPerPage(api.app.Settings().Pagination.MaxPerPage).
 		Query(api.app.Dao().RecordQuery(collection))
+
+	if !isAll {
+		searchProvider = searchProvider.
+			PerPage(api.app.Settings().Pagination.DefaultPerPage).
+			MaxPerPage(api.app.Settings().Pagination.MaxPerPage)
+	} else {
+		searchProvider = searchProvider.SetAll(true)
+	}
 
 	if requestInfo.Admin == nil && collection.ListRule != nil {
 		searchProvider.AddFilter(search.FilterData(*collection.ListRule))
@@ -74,6 +82,7 @@ func (api *recordApi) list(c echo.Context) error {
 	records := []*models.Record{}
 
 	result, err := searchProvider.ParseAndExec(c.QueryParams().Encode(), &records)
+
 	if err != nil {
 		return NewBadRequestError("", err)
 	}
