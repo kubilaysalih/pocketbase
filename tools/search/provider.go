@@ -253,7 +253,8 @@ func (s *Provider) Exec(items any) (*Result, error) {
 	totalPages := -1
 
 	// prepare a count query from the base one
-	countQuery := modelsQuery // shallow clone
+	countQuery := modelsQuery.CloneWithoutJoinsIfNoWhere()
+
 	countExec := func() error {
 		queryInfo := countQuery.Info()
 		countCol := s.countCol
